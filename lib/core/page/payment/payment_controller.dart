@@ -92,6 +92,41 @@ class PaymentController extends GetxController {
 
   // send fatora to server
 
+  void getFatoura(BuildContext context, int invoiceId, var response) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return InvoiceWebView(invoiceId: invoiceId);
+        },
+      ),
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        Get.snackbar(
+          '\u{1F643}',
+          'Status: ${response.statusCode}, Id: $invoiceId',
+          colorText: Colors.white,
+          snackStyle: SnackStyle.FLOATING,
+          backgroundColor: AppColors.current.success,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        break;
+      // default:
+      //   Get.snackbar(
+      //     '\u{1F643}',
+      //     'من فضلك تأكد من صحة البيانات!${response.statusCode}',
+      //     colorText: Colors.white,
+      //     snackStyle: SnackStyle.FLOATING,
+      //     backgroundColor: AppColors.current.success,
+      //     snackPosition: SnackPosition.BOTTOM,
+      //   );
+      //   break;
+
+    }
+  }
+
   void sendMyFatouraToServer(
     BuildContext context,
   ) async {
@@ -101,10 +136,11 @@ class PaymentController extends GetxController {
       prods.addAll(controller.fatouraProducts[i].toJson(i));
       i++;
     }
-
+    var response;
+    int invoiceId = 100;
     const String baseUrl = "https://6o9.live/api/SaveSelle";
     try {
-      final response = await http.post(Uri.parse(baseUrl),
+      response = await http.post(Uri.parse(baseUrl),
           body: {
             'customer_id': '79',
             'branche_id': sharedPreferences!.getString('Branch_Id')!,
@@ -120,55 +156,33 @@ class PaymentController extends GetxController {
             "paiments[0][amount]": '${controller.price.value}',
             "paiments[0][painent_method]": '10'
           }..addAll(prods));
-      int? invoiceId;
+
       try {
         final r = json.decode(response.body);
         invoiceId = r['id'];
       } catch (e) {
-        invoiceId = 100;
+        invoiceId = 1;
       }
       // ignore: use_build_context_synchronously
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) {
-            return InvoiceWebView(invoiceId: invoiceId!);
-          },
-        ),
-      );
 
-      switch (response.statusCode) {
-        case 200:
-          Get.snackbar(
-            '\u{1F643}',
-            '200',
-            colorText: Colors.white,
-            snackStyle: SnackStyle.FLOATING,
-            backgroundColor: AppColors.current.success,
-            snackPosition: SnackPosition.BOTTOM,
-          );
-          break;
-        default:
-          Get.snackbar(
-            '\u{1F643}',
-            'من فضلك تأكد من صحة البيانات!${response.statusCode}',
-            colorText: Colors.white,
-            snackStyle: SnackStyle.FLOATING,
-            backgroundColor: AppColors.current.success,
-            snackPosition: SnackPosition.BOTTOM,
-          );
-          break;
-      }
     } on SocketException {
-      Get.snackbar(
-        '\u{1F643}',
-        'لا يتوفر اتصال بالانترنت',
-        colorText: Colors.white,
-        snackStyle: SnackStyle.FLOATING,
-        backgroundColor: AppColors.current.success,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      // Get.snackbar(
+      //   '\u{1F643}',
+      //   'لا يتوفر اتصال بالانترنت',
+      //   colorText: Colors.white,
+      //   snackStyle: SnackStyle.FLOATING,
+      //   backgroundColor: AppColors.current.success,
+      //   snackPosition: SnackPosition.BOTTOM,
+      // ); // Get.snackbar(
+      //   '\u{1F643}',
+      //   'لا يتوفر اتصال بالانترنت',
+      //   colorText: Colors.white,
+      //   snackStyle: SnackStyle.FLOATING,
+      //   backgroundColor: AppColors.current.success,
+      //   snackPosition: SnackPosition.BOTTOM,
+      // );
     }
+    getFatoura(context, invoiceId, response);
   }
 }
 
